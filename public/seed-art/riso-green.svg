@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <defs>
+    <filter id="grain"><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="3" stitchTiles="stitch"/><feColorMatrix type="saturate" values="0"/><feComponentTransfer><feFuncA type="linear" slope="0.13"/></feComponentTransfer></filter>
+    <pattern id="grid" width="26" height="26" patternUnits="userSpaceOnUse"><path d="M26 0H0V26" fill="none" stroke="#42523c" stroke-width="2" opacity="0.35"/></pattern>
+  </defs>
+  <rect width="1200" height="800" fill="#eae4d4"/>
+  <rect x="0" y="0" width="1200" height="800" fill="url(#grid)"/>
+  <rect x="140" y="130" width="290" height="540" fill="#5c6f4e" opacity="0.9"/>
+  <rect x="470" y="250" width="230" height="420" fill="#8b9a72" opacity="0.8"/>
+  <rect x="740" y="90" width="300" height="580" fill="#3c4c37" opacity="0.85"/>
+  <path d="M120 620 C340 520 560 700 790 560 S1030 430 1160 500" fill="none" stroke="#eae4d4" stroke-width="24" opacity="0.8"/>
+  <circle cx="610" cy="200" r="70" fill="#d6b56a" opacity="0.9"/>
+  <rect width="1200" height="800" filter="url(#grain)" opacity="0.55"/>
+</svg>
