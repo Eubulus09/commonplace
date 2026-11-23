@@ -11,30 +11,63 @@ export function PostActions({
   bookmarked,
   likes,
   comments,
+  signedIn = true,
 }: {
   postId: string;
   liked: boolean;
   bookmarked: boolean;
   likes: number;
   comments: number;
+  signedIn?: boolean;
 }) {
   const [isLiked, setIsLiked] = useState(liked);
   const [isSaved, setIsSaved] = useState(bookmarked);
   const [likeCount, setLikeCount] = useState(likes);
-  const [, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const [pending, startTransition] = useTransition();
+
+  if (!signedIn) {
+    return (
+      <div className="mt-5 flex items-center gap-1 border-t border-rule pt-3">
+        <Link href={`/p/${postId}#comments`} aria-label={`${comments} comments`} className="flex items-center gap-2 px-2 py-1.5 type-stamp no-underline text-ink-soft hover:text-terracotta">
+          <CommentIcon className="h-[17px] w-[17px]" />
+          <span>{comments}</span>
+        </Link>
+        <Link href={`/login?next=${encodeURIComponent(`/p/${postId}`)}`} className="ml-auto px-2 py-1.5 type-stamp no-underline text-ink-soft hover:text-terracotta">
+          Sign in to save
+        </Link>
+      </div>
+    );
+  }
 
   function onLike() {
-    setIsLiked((value) => !value);
-    setLikeCount((value) => value + (isLiked ? -1 : 1));
+    const previousLiked = isLiked;
+    const previousCount = likeCount;
+    setIsLiked(!previousLiked);
+    setLikeCount(previousCount + (previousLiked ? -1 : 1));
+    setError(null);
+
     startTransition(async () => {
-      await toggleLike(postId);
+      const result = await toggleLike(postId);
+      if (result.error) {
+        setIsLiked(previousLiked);
+        setLikeCount(previousCount);
+        setError(result.error);
+      }
     });
   }
 
   function onBookmark() {
-    setIsSaved((value) => !value);
+    const previousSaved = isSaved;
+    setIsSaved(!previousSaved);
+    setError(null);
+
     startTransition(async () => {
-      await toggleBookmark(postId);
+      const result = await toggleBookmark(postId);
+      if (result.error) {
+        setIsSaved(previousSaved);
+        setError(result.error);
+      }
     });
   }
 
@@ -43,14 +76,16 @@ export function PostActions({
       <button
         type="button"
         onClick={onLike}
+        disabled={pending}
         aria-pressed={isLiked}
-        className={`flex items-center gap-2 px-2 py-1.5 type-stamp transition-colors hover:text-terracotta ${isLiked ? "text-terracotta" : "text-ink-soft"}`}
+        aria-label={`${isLiked ? "Unlike" : "Like"}, ${likeCount} likes`}
+        className={`flex items-center gap-2 px-2 py-1.5 type-stamp transition-colors hover:text-terracotta disabled:opacity-60 ${isLiked ? "text-terracotta" : "text-ink-soft"}`}
       >
         <HeartIcon filled={isLiked} className="h-[17px] w-[17px]" />
         <span>{likeCount}</span>
       </button>
 
-      <Link href={`/p/${postId}#comments`} className="flex items-center gap-2 px-2 py-1.5 type-stamp no-underline text-ink-soft hover:text-terracotta">
+      <Link href={`/p/${postId}#comments`} aria-label={`${comments} comments`} className="flex items-center gap-2 px-2 py-1.5 type-stamp no-underline text-ink-soft hover:text-terracotta">
         <CommentIcon className="h-[17px] w-[17px]" />
         <span>{comments}</span>
       </Link>
@@ -58,12 +93,16 @@ export function PostActions({
       <button
         type="button"
         onClick={onBookmark}
+        disabled={pending}
         aria-pressed={isSaved}
-        className={`ml-auto flex items-center gap-2 px-2 py-1.5 type-stamp transition-colors hover:text-terracotta ${isSaved ? "text-terracotta" : "text-ink-soft"}`}
+        aria-label={isSaved ? "Remove saved entry" : "Save entry"}
+        className={`ml-auto flex items-center gap-2 px-2 py-1.5 type-stamp transition-colors hover:text-terracotta disabled:opacity-60 ${isSaved ? "text-terracotta" : "text-ink-soft"}`}
       >
         <BookmarkIcon filled={isSaved} className="h-[17px] w-[17px]" />
         <span>{isSaved ? "Saved" : "Save"}</span>
       </button>
+
+      {error ? <p role="alert" className="w-full px-2 pt-2 text-xs text-terracotta">{error}</p> : null}
     </div>
   );
 }

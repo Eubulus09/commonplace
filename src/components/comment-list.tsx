@@ -12,7 +12,7 @@ export function CommentList({ comments }: { comments: Comment[] }) {
     <ul className="flex flex-col divide-y divide-rule">
       {comments.map((comment) => (
         <li key={comment.id} className="flex gap-3 py-5">
-          <Link href={`/u/${comment.author.username}`} className="no-underline">
+          <Link href={`/u/${comment.author.username}`} aria-label={`View @${comment.author.username}'s profile`} className="no-underline">
             <Avatar profile={comment.author} size={36} />
           </Link>
           <div className="min-w-0 flex-1">

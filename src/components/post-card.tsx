@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { Avatar } from "@/components/avatar";
+import { DeletePostButton } from "@/components/delete-post-button";
 import { PostActions } from "@/components/post-actions";
-import { deletePost } from "@/app/actions/posts";
-import { formatRelative, kindLabels, mediaUrl } from "@/lib/format";
+import { cssUrl, formatRelative, kindLabels, mediaUrl } from "@/lib/format";
 import type { FeedPost, PostKind } from "@/lib/types";
 
 const kindColors: Record<PostKind, string> = {
@@ -20,7 +20,7 @@ export function PostCard({ post, viewerId }: { post: FeedPost; viewerId?: string
   return (
     <article className="paper-panel">
       <div className="flex items-start gap-3 px-5 pt-5 sm:px-6">
-        <Link href={`/u/${post.author.username}`} className="no-underline">
+        <Link href={`/u/${post.author.username}`} aria-label={`View @${post.author.username}'s profile`} className="no-underline">
           <Avatar profile={post.author} size={42} />
         </Link>
 
@@ -62,7 +62,7 @@ export function PostCard({ post, viewerId }: { post: FeedPost; viewerId?: string
                   role="img"
                   aria-label={item.alt}
                   className="aspect-[3/2] border border-rule bg-paper-deep bg-cover bg-center"
-                  style={{ backgroundImage: `url("${src}")` }}
+                  style={{ backgroundImage: cssUrl(src) }}
                 />
               );
             })}
@@ -82,19 +82,15 @@ export function PostCard({ post, viewerId }: { post: FeedPost; viewerId?: string
 
       <div className="px-5 pb-4 pt-5 sm:px-6">
         <PostActions
+          key={`${post.liked}-${post.bookmarked}-${stats?.likes ?? 0}-${stats?.comments ?? 0}`}
           postId={post.id}
           liked={post.liked}
           bookmarked={post.bookmarked}
           likes={stats?.likes ?? 0}
           comments={stats?.comments ?? 0}
+          signedIn={Boolean(viewerId)}
         />
-        {isOwner ? (
-          <form action={deletePost.bind(null, post.id)} className="mt-2 flex justify-end">
-            <button type="submit" className="type-stamp text-ink-soft/60 hover:text-terracotta">
-              Delete entry
-            </button>
-          </form>
-        ) : null}
+        {isOwner ? <DeletePostButton postId={post.id} /> : null}
       </div>
     </article>
   );

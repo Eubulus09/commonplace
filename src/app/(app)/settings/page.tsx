@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { ProfileForm } from "@/components/profile-form";
-import { getCurrentProfile } from "@/lib/data";
+import { getCurrentProfile, getCurrentUser } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Settings" };
 
 export default async function SettingsPage() {
+  const user = await getCurrentUser();
+  if (!user) redirect("/login?next=/settings");
   const profile = await getCurrentProfile();
 
   return (

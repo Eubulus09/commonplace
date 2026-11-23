@@ -13,7 +13,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       <div className="grid gap-6 sm:grid-cols-2">
         <label className="type-stamp block">
           Display name
-          <input name="display_name" className="field mt-2" defaultValue={profile.display_name} required />
+          <input name="display_name" className="field mt-2" defaultValue={profile.display_name} maxLength={80} required />
         </label>
         <label className="type-stamp block">
           Username
@@ -23,11 +23,13 @@ export function ProfileForm({ profile }: { profile: Profile }) {
 
       <label className="type-stamp mt-6 block">
         Headline
-        <input name="headline" className="field mt-2" defaultValue={profile.headline} placeholder="What you are known for" />
+          <input name="headline" className="field mt-2" defaultValue={profile.headline} maxLength={160} placeholder="What you are known for" />
+
       </label>
       <label className="type-stamp mt-6 block">
         Practice
-        <input name="practice" className="field mt-2" defaultValue={profile.practice} placeholder="Art, research, design, writing…" />
+          <input name="practice" className="field mt-2" defaultValue={profile.practice} maxLength={80} placeholder="Art, research, design, writing…" />
+
       </label>
       <label className="type-stamp mt-6 block">
         Bio
@@ -35,7 +37,8 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       </label>
       <label className="type-stamp mt-6 block">
         Location
-        <input name="location" className="field mt-2" defaultValue={profile.location} />
+          <input name="location" className="field mt-2" defaultValue={profile.location} maxLength={80} />
+
       </label>
       <label className="type-stamp mt-6 block">
         Links
@@ -49,11 +52,11 @@ export function ProfileForm({ profile }: { profile: Profile }) {
       </label>
       <label className="type-stamp mt-6 block">
         Avatar
-        <input name="avatar" type="file" accept="image/*" className="mt-2 block w-full text-[0.8rem] normal-case tracking-normal text-ink-soft" />
+        <input name="avatar" type="file" accept="image/png,image/jpeg,image/webp,image/gif" className="mt-2 block w-full text-[0.8rem] normal-case tracking-normal text-ink-soft" />
       </label>
 
-      {state.error ? <p className="mt-6 text-sm text-terracotta">{state.error}</p> : null}
-      {state.success ? <p className="mt-6 text-sm text-moss">Profile saved.</p> : null}
+      {state.error ? <p role="alert" className="mt-6 text-sm text-terracotta">{state.error}</p> : null}
+      {state.success ? <p role="status" className="mt-6 text-sm text-moss">Profile saved.</p> : null}
 
       <div className="mt-8 flex justify-end border-t border-rule pt-5">
         <button type="submit" disabled={pending} className="ink-button">

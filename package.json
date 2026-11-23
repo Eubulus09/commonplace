@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit --incremental false"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

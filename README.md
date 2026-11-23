@@ -1,34 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Commonplace
 
-## Getting Started
+A social ledger for work that refuses one label: drafts, findings, finished pieces, and everything in between. Built with Next.js 16, Tailwind CSS 4, and Supabase.
 
-First, run the development server:
+## Live app
+
+- Production alias: https://commonplace-nine-tawny.vercel.app
+- Username alias: https://commonplace-eubulus09.vercel.app
+- `commonplace.vercel.app` is unavailable because that Vercel alias is already owned by another account.
+
+## Local setup
+
+1. Use Node.js 20.9 or newer and npm.
+2. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+3. Copy `.env.example` to `.env.local` and fill in the Supabase project URL and publishable key:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+4. Apply the migrations in `supabase/migrations/` to your Supabase project, then optionally load `supabase/seed.sql` for demo content.
+5. Start the app:
+
+   ```bash
+   npm run dev
+   ```
+
+   Open http://localhost:3000.
+
+## Supabase configuration
+
+Required environment variables (also set these in Vercel for Production, Preview, and Development):
+
+- `NEXT_PUBLIC_SUPABASE_URL`
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`
+
+In Supabase Auth, add these redirect URLs so email confirmation links work:
+
+- `http://localhost:3000/auth/confirm`
+- `https://commonplace-nine-tawny.vercel.app/auth/confirm`
+- `https://commonplace-eubulus09.vercel.app/auth/confirm`
+
+The app writes rows through RLS-protected tables and public Storage buckets. Migrations also set file size and MIME limits and keep bookmark totals private while still exposing aggregate counts.
+
+## Checks
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm run lint
+npm run typecheck
+npm run build
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Changing `NEXT_PUBLIC_*` variables requires a new deployment because Next.js inlines them at build time.

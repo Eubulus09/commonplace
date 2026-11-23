@@ -13,9 +13,17 @@ import {
   getProfileByUsername,
   isFollowing,
 } from "@/lib/data";
-import { formatDate, mediaUrl, safeExternalUrl } from "@/lib/format";
+import { cssUrl, formatDate, mediaUrl, safeExternalUrl } from "@/lib/format";
 
-export const metadata: Metadata = { title: "Profile" };
+export async function generateMetadata({ params }: { params: Promise<{ username: string }> }): Promise<Metadata> {
+  const { username } = await params;
+  const profile = await getProfileByUsername(username);
+  if (!profile) return { title: "Profile not found" };
+  return {
+    title: profile.display_name,
+    description: profile.headline || profile.bio.slice(0, 160) || `Work kept by @${profile.username} on Commonplace.`,
+  };
+}
 
 export default async function ProfilePage({ params }: { params: Promise<{ username: string }> }) {
   const { username } = await params;
@@ -30,12 +38,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   ]);
 
   const isSelf = viewer?.id === profile.id;
-  const cover = mediaUrl(profile.cover_path, "post-media");
+  const cover = mediaUrl(profile.cover_path, "avatars");
   const links = profile.links.filter((link) => safeExternalUrl(link.url));
 
   return (
     <div>
-      <div className={`h-32 border border-rule bg-paper-deep bg-cover bg-center ${cover ? "" : "paper-lines"}`} style={cover ? { backgroundImage: `url("${cover}")` } : undefined} />
+      <div className={`h-32 border border-rule bg-paper-deep bg-cover bg-center ${cover ? "" : "paper-lines"}`} style={cover ? { backgroundImage: cssUrl(cover) } : undefined} />
 
       <section className="border border-t-0 border-rule bg-paper-light px-5 py-6 sm:px-7">
         <div className="flex flex-wrap items-start gap-4">
@@ -52,7 +60,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 Edit profile
               </Link>
             ) : (
-              <FollowButton targetId={profile.id} initialFollowing={following} isSelf={false} signedIn={Boolean(viewer)} />
+              <FollowButton key={`${profile.id}-${following}`} targetId={profile.id} username={profile.username} initialFollowing={following} isSelf={false} signedIn={Boolean(viewer)} />
             )}
           </div>
         </div>

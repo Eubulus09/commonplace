@@ -50,7 +50,7 @@ export function AuthForm({ mode, next = "/feed" }: { mode: "login" | "signup"; n
           <input name="password" type="password" className="field mt-2" autoComplete={isLogin ? "current-password" : "new-password"} minLength={8} required />
         </label>
 
-        {state.error ? <p className="mt-5 text-sm text-terracotta">{state.error}</p> : null}
+        {state.error ? <p role="alert" className="mt-5 text-sm text-terracotta">{state.error}</p> : null}
 
         <button type="submit" disabled={pending} className="ink-button mt-8 w-full">
           {pending ? "One moment…" : isLogin ? "Sign in" : "Create account"}

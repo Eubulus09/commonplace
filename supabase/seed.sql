@@ -1,3 +1,5 @@
+set search_path = public, extensions;
+
 insert into auth.users (id, instance_id, aud, role, email, encrypted_password, email_confirmed_at, raw_user_meta_data, raw_app_meta_data, created_at, updated_at)
 values
   ('11111111-1111-4111-8111-111111111111', '00000000-0000-0000-0000-000000000000', 'authenticated', 'authenticated', 'maya@commonplace.demo', crypt('password123', gen_salt('bf')), now(), '{"username":"maya","display_name":"Maya Ibarra","headline":"Printmaker and installation artist","practice":"Visual art"}'::jsonb, '{"provider":"email","providers":["email"]}'::jsonb, now(), now()),
@@ -45,7 +47,15 @@ values
   ('44444444-4444-4444-8444-444444444444', 'jules', 'Jules Moreau', 'Essayist and newsletter writer', 'Writing', 'Weekly notes on attention, cities, and the strange afterlife of things people throw away.', 'Marseille, FR', '[{"label":"Newsletter","url":"https://example.com/jules"}]'::jsonb, now() - interval '170 days'),
   ('55555555-5555-4555-8555-555555555555', 'sam', 'Sam Vale', 'Community archivist', 'Archives', 'Helping neighbourhood groups keep their own records. Photographs, oral histories, and finding aids.', 'Bristol, UK', '[{"label":"Archive","url":"https://example.com/sam"}]'::jsonb, now() - interval '150 days'),
   ('66666666-6666-4666-8666-666666666666', 'ren', 'Ren Aoki', 'Sound artist and field recordist', 'Sound', 'Recording the small mechanical voices of places: pumps, shutters, trains, rooms before they empty.', 'Kyoto, JP', '[{"label":"Sound","url":"https://example.com/ren"}]'::jsonb, now() - interval '130 days')
-on conflict (id) do nothing;
+on conflict (id) do update set
+  username = excluded.username,
+  display_name = excluded.display_name,
+  headline = excluded.headline,
+  practice = excluded.practice,
+  bio = excluded.bio,
+  location = excluded.location,
+  links = excluded.links,
+  created_at = excluded.created_at;
 
 insert into public.posts (id, author_id, kind, title, body, media, tags, created_at)
 values

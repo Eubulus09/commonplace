@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { AuthForm } from "@/components/auth-form";
+import { safeNextPath } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Sign in" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string; notice?: string; error?: string }> }) {
   const params = await searchParams;
-  const next = params.next?.startsWith("/") && !params.next.startsWith("//") ? params.next : "/feed";
+  const next = safeNextPath(params.next);
 
   return (
     <div className="w-full max-w-[520px]">

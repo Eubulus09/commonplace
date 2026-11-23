@@ -44,18 +44,43 @@ export function initials(name: string) {
 export function safeExternalUrl(url: string) {
   try {
     const parsed = new URL(url);
-    return parsed.protocol === "https:" || parsed.protocol === "http:";
+    return parsed.protocol === "https:";
   } catch {
     return false;
   }
 }
 
+export function safeNextPath(value: unknown, fallback = "/feed") {
+  if (typeof value !== "string" || !value) return fallback;
+  if (/[\\\u0000-\u001f\u007f]|%5c|%2f/i.test(value)) return fallback;
+  if (!value.startsWith("/") || value.startsWith("//")) return fallback;
+
+  try {
+    const parsed = new URL(value, "https://commonplace.local");
+    if (parsed.origin !== "https://commonplace.local" || !parsed.pathname.startsWith("/")) return fallback;
+    return `${parsed.pathname}${parsed.search}${parsed.hash}`;
+  } catch {
+    return fallback;
+  }
+}
+
+export function isUuid(value: string) {
+  return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(value);
+}
+
+export function cssUrl(url: string) {
+  return `url(${JSON.stringify(url)})`;
+}
+
 export function mediaUrl(path: string | null | undefined, bucket: "post-media" | "avatars" = "post-media") {
-  if (!path) return null;
-  if (path.startsWith("/") || path.startsWith("http://") || path.startsWith("https://")) return path;
+  if (!path || !/^[\w./-]+$/.test(path) || path.includes("..")) return null;
+
+  if (path.startsWith("/")) {
+    return /^\/seed-art\/[\w.-]+$/.test(path) ? path : null;
+  }
 
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  if (!base) return `/${path}`;
+  if (!base) return null;
   return `${base}/storage/v1/object/public/${bucket}/${path}`;
 }
 

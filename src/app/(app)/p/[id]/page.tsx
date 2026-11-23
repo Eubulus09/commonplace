@@ -7,7 +7,15 @@ import { ArrowIcon } from "@/components/icons";
 import { PostCard } from "@/components/post-card";
 import { getCurrentUser, getComments, getPost } from "@/lib/data";
 
-export const metadata: Metadata = { title: "Entry" };
+export async function generateMetadata({ params }: { params: Promise<{ id: string }> }): Promise<Metadata> {
+  const { id } = await params;
+  const post = await getPost(id);
+  if (!post) return { title: "Entry not found" };
+  return {
+    title: post.title || "Entry",
+    description: post.body.slice(0, 160),
+  };
+}
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;

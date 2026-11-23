@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isUuid } from "@/lib/format";
 import type { Comment, FeedPost, Post, PostKind, PostStats, Profile } from "@/lib/types";
 
 const profileFields = "id, username, display_name, headline, practice, bio, location, links, avatar_path, cover_path, created_at";
@@ -27,7 +28,8 @@ export async function getCurrentProfile(): Promise<Profile | null> {
   if (!user) return null;
 
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select(profileFields).eq("id", user.id).maybeSingle();
+  const { data, error } = await supabase.from("profiles").select(profileFields).eq("id", user.id).maybeSingle();
+  if (error) throw error;
   return (data as Profile | null) ?? null;
 }
 
@@ -37,9 +39,17 @@ async function hydratePosts(posts: Post[], viewerId: string | undefined, supabas
   const ids = posts.map((post) => post.id);
   const [statsResult, likesResult, bookmarksResult] = await Promise.all([
     supabase.from("post_stats").select("post_id, likes, comments, bookmarks").in("post_id", ids),
-    viewerId ? supabase.from("post_likes").select("post_id").eq("user_id", viewerId).in("post_id", ids) : Promise.resolve({ data: [] }),
-    viewerId ? supabase.from("post_bookmarks").select("post_id").eq("user_id", viewerId).in("post_id", ids) : Promise.resolve({ data: [] }),
+    viewerId
+      ? supabase.from("post_likes").select("post_id").eq("user_id", viewerId).in("post_id", ids)
+      : Promise.resolve({ data: [], error: null }),
+    viewerId
+      ? supabase.from("post_bookmarks").select("post_id").eq("user_id", viewerId).in("post_id", ids)
+      : Promise.resolve({ data: [], error: null }),
   ]);
+
+  if (statsResult.error) throw statsResult.error;
+  if (likesResult.error) throw likesResult.error;
+  if (bookmarksResult.error) throw bookmarksResult.error;
 
   const stats = new Map<string, PostStats>((statsResult.data ?? []).map((item) => [item.post_id, item]));
   const liked = new Set((likesResult.data ?? []).map((item) => item.post_id));
@@ -75,11 +85,13 @@ export async function getFeedPosts(filter: FeedFilter = "all", viewerId?: string
 
 export async function getBookmarkedPosts(viewerId: string): Promise<FeedPost[]> {
   const supabase = await createClient();
-  const { data: saved } = await supabase
+  const { data: saved, error: savedError } = await supabase
     .from("post_bookmarks")
     .select("post_id")
     .eq("user_id", viewerId)
     .order("created_at", { ascending: false });
+
+  if (savedError) throw savedError;
 
   const ids = (saved ?? []).map((item) => item.post_id);
   if (!ids.length) return [];
@@ -94,13 +106,16 @@ export async function getBookmarkedPosts(viewerId: string): Promise<FeedPost[]> 
 
 export async function getProfileByUsername(username: string): Promise<Profile | null> {
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select(profileFields).eq("username", username).maybeSingle();
+  const { data, error } = await supabase.from("profiles").select(profileFields).eq("username", username).maybeSingle();
+  if (error) throw error;
   return (data as Profile | null) ?? null;
 }
 
 export async function getProfileById(id: string): Promise<Profile | null> {
+  if (!isUuid(id)) return null;
   const supabase = await createClient();
-  const { data } = await supabase.from("profiles").select(profileFields).eq("id", id).maybeSingle();
+  const { data, error } = await supabase.from("profiles").select(profileFields).eq("id", id).maybeSingle();
+  if (error) throw error;
   return (data as Profile | null) ?? null;
 }
 
@@ -130,24 +145,25 @@ export async function getPostsByTag(tag: string, viewerId?: string): Promise<Fee
 }
 
 export async function searchPosts(query: string, viewerId?: string): Promise<FeedPost[]> {
+  const needle = query.trim().toLowerCase().replace(/[^a-z0-9 _-]/g, " ").trim();
+  if (!needle) return [];
+
   const supabase = await createClient();
+  const tag = needle.replace(/\s+/g, "-");
+  const filter = `title.ilike.*${needle}*,body.ilike.*${needle}*,tags.cs.{${tag}}`;
   const { data, error } = await supabase
     .from("posts")
     .select(postSelect)
+    .or(filter)
     .order("created_at", { ascending: false })
-    .limit(100);
+    .limit(60);
 
   if (error) throw error;
-
-  const needle = query.trim().toLowerCase();
-  const matches = ((data ?? []) as unknown as Post[]).filter((post) =>
-    [post.title ?? "", post.body, ...post.tags].some((value) => value.toLowerCase().includes(needle)),
-  );
-
-  return hydratePosts(matches, viewerId, supabase);
+  return hydratePosts((data ?? []) as unknown as Post[], viewerId, supabase);
 }
 
 export async function getPost(id: string, viewerId?: string): Promise<FeedPost | null> {
+  if (!isUuid(id)) return null;
   const supabase = await createClient();
   const { data, error } = await supabase.from("posts").select(postSelect).eq("id", id).maybeSingle();
   if (error) throw error;
@@ -158,6 +174,7 @@ export async function getPost(id: string, viewerId?: string): Promise<FeedPost |
 }
 
 export async function getComments(postId: string): Promise<Comment[]> {
+  if (!isUuid(postId)) return [];
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("comments")
@@ -172,12 +189,13 @@ export async function getComments(postId: string): Promise<Comment[]> {
 export async function isFollowing(followerId: string | undefined, followingId: string): Promise<boolean> {
   if (!followerId || followerId === followingId) return false;
   const supabase = await createClient();
-  const { data } = await supabase
+  const { data, error } = await supabase
     .from("follows")
     .select("following_id")
     .eq("follower_id", followerId)
     .eq("following_id", followingId)
     .maybeSingle();
+  if (error) throw error;
   return Boolean(data);
 }
 
@@ -187,6 +205,8 @@ export async function getFollowCounts(profileId: string) {
     supabase.from("follows").select("follower_id", { count: "exact", head: true }).eq("following_id", profileId),
     supabase.from("follows").select("following_id", { count: "exact", head: true }).eq("follower_id", profileId),
   ]);
+  if (followers.error) throw followers.error;
+  if (following.error) throw following.error;
   return { followers: followers.count ?? 0, following: following.count ?? 0 };
 }
 

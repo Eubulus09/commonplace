@@ -30,7 +30,7 @@ export default async function DiscoverPage({ searchParams }: { searchParams: Pro
       </p>
 
       <form action="/discover" method="GET" className="mt-7 flex border-b border-ink">
-        <input name="q" defaultValue={query} placeholder="Search the ledger" className="field flex-1 border-0" />
+        <input name="q" defaultValue={query} placeholder="Search the ledger" aria-label="Search the ledger" className="field flex-1 border-0" />
         <button type="submit" className="px-3 type-stamp hover:text-terracotta">
           Search
         </button>

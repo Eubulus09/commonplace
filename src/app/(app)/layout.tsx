@@ -1,4 +1,3 @@
-import { redirect } from "next/navigation";
 import { RightRail } from "@/components/right-rail";
 import { SideNav } from "@/components/side-nav";
 import { TopBar } from "@/components/top-bar";
@@ -8,12 +7,10 @@ export const dynamic = "force-dynamic";
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await getCurrentUser();
-  if (!user) redirect("/login?next=/feed");
-
   const [profile, tags, suggested] = await Promise.all([
     getCurrentProfile(),
     getTrendingTags(),
-    getSuggestedProfiles(user.id),
+    getSuggestedProfiles(user?.id),
   ]);
 
   return (

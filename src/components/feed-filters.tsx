@@ -20,6 +20,7 @@ export function FeedFilters({ active }: { active: FeedFilter }) {
           <Link
             key={option.value}
             href={option.value === "all" ? "/feed" : `/feed?filter=${option.value}`}
+            aria-current={isActive ? "page" : undefined}
             className={`shrink-0 border px-3 py-2 type-stamp no-underline transition-colors ${
               isActive ? "border-ink bg-ink text-paper-light" : "border-rule text-ink-soft hover:border-ink hover:text-ink"
             }`}

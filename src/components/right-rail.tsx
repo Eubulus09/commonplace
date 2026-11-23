@@ -48,7 +48,7 @@ export function RightRail({
         <ul className="mt-4 flex flex-col gap-4">
           {profiles.map((profile) => (
             <li key={profile.id} className="flex items-start gap-3">
-              <Link href={`/u/${profile.username}`} className="no-underline">
+              <Link href={`/u/${profile.username}`} aria-label={`View @${profile.username}'s profile`} className="no-underline">
                 <Avatar profile={profile} size={36} />
               </Link>
               <div className="min-w-0">

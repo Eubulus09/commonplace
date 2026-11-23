@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { EmptyState } from "@/components/empty-state";
 import { PostList } from "@/components/post-list";
 import { getCurrentUser, getBookmarkedPosts } from "@/lib/data";
@@ -7,7 +8,8 @@ export const metadata: Metadata = { title: "Saved" };
 
 export default async function SavedPage() {
   const user = await getCurrentUser();
-  const posts = user ? await getBookmarkedPosts(user.id) : [];
+  if (!user) redirect("/login?next=/saved");
+  const posts = await getBookmarkedPosts(user.id);
 
   return (
     <div>

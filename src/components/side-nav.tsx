@@ -59,7 +59,7 @@ export function SideNav({ profile }: { profile: Profile | null }) {
         <div className="border-t border-rule pt-5">
           {profile ? (
             <div className="flex items-center gap-3">
-              <Link href={`/u/${profile.username}`} className="no-underline">
+              <Link href={`/u/${profile.username}`} aria-label={`View @${profile.username}'s profile`} className="no-underline">
                 <Avatar profile={profile} size={40} />
               </Link>
               <div className="min-w-0 flex-1">

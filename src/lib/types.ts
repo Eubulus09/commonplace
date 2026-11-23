@@ -1,5 +1,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
+export type ActionResult = { success?: boolean; error?: string };
+
 export type PostKind = "art" | "work" | "research" | "note" | "milestone";
 
 export type MediaItem = {
@@ -115,7 +117,7 @@ export interface Database {
             foreignKeyName: "post_likes_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
-            referencedRelation: "profiles";
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -136,7 +138,7 @@ export interface Database {
             foreignKeyName: "post_bookmarks_user_id_fkey";
             columns: ["user_id"];
             isOneToOne: false;
-            referencedRelation: "profiles";
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];

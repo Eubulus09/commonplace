@@ -15,7 +15,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
   const params = await searchParams;
   const filter = filters.includes(params.filter as FeedFilter) ? (params.filter as FeedFilter) : "all";
   const user = await getCurrentUser();
-  const posts = user ? await getFeedPosts(filter, user.id) : [];
+  const posts = await getFeedPosts(filter, user?.id);
 
   return (
     <div>
@@ -35,7 +35,13 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
       </div>
 
       <div className="mt-5">
-        <Composer userId={user?.id ?? ""} open={params.compose === "1"} />
+        {user ? (
+          <Composer userId={user.id} open={params.compose === "1"} />
+        ) : (
+          <p className="paper-panel px-5 py-4 text-sm text-ink-soft">
+            <Link href={`/login?next=${encodeURIComponent("/feed?compose=1")}`} className="editorial-link no-underline text-ink">Sign in</Link> to keep an entry.
+          </p>
+        )}
       </div>
 
       <div className="mt-5">
@@ -49,8 +55,8 @@ export default async function FeedPage({ searchParams }: { searchParams: Promise
                 ? "Follow a few people whose work you want to keep seeing, then their entries will collect here."
                 : "No entries have been published in this view yet. Start with your own note, or browse what others are keeping."
             }
-            actionHref={filter === "following" ? "/discover" : "/feed?compose=1"}
-            actionLabel={filter === "following" ? "Find people" : "Write the first entry"}
+            actionHref={!user ? "/login?next=/feed" : filter === "following" ? "/discover" : "/feed?compose=1"}
+            actionLabel={!user ? "Sign in to join" : filter === "following" ? "Find people" : "Write the first entry"}
           />
         )}
       </div>
